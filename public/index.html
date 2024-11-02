@@ -1,0 +1,445 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+
+    <link href="lib/css/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="lib/css/notyf.min.css">
+    <style>
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        body {
+            font-family: "Manrope", sans-serif !important;
+        }
+
+        .datatable-selector {
+            height: 32px;
+            padding: 5px;
+        }
+
+        .datatable-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .wrap-text {
+            display: block;
+            width: 200px;
+            white-space: normal;
+        }
+    </style>
+
+    <script src="lib/js/tailwind.min.js"></script>
+    <script src="lib/js/jquery.min.js"></script>
+    <script src="lib/js/flowbite.min.js"></script>
+    <script src="lib/js/simple-datatables.min.js"></script>
+    <script src="lib/js/notyf.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        clifford: '#da373d',
+                    }
+                }
+            },
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="dark:bg-slate-900" id="navbar">
+        <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            <div class="relative flex h-16 items-center justify-between">
+                <div class="flex items-center justify-start mx-2">
+                    <div class="flex flex-shrink-0 items-center">
+                        <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512"
+                            class="h-6 w-6 text-blue-600 mr-2 sm:h-7" alt="ATS Logo" height="1em" width="1em"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M117.3 42.7c-17.6 0-32 14.4-32 32v362.7c0 17.6 14.4 32 32 32H320V42.7H117.3zM384.7 42.7H368v426.7h16.7c23.1 0 42-18.9 42-42V84.7c0-23.1-18.9-42-42-42z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="ml-6">
+                        <div class="flex space-x-4">
+                            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+                            <a href="#"
+                                class="navbar-link rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                                data-target="#trade-logs">Trade
+                                Logs</a>
+                            <a href="#"
+                                class="navbar-link rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                                data-target="#config">Config</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                    <button type="button" id="mode"
+                        class="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white focus:outline-none rounded-lg text-sm p-2.5">
+                        <span class="dark-icon">
+                            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16"
+                                class="w-5 h-5" id="theme-toggle-dark-icon" height="1em" width="1em"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z">
+                                </path>
+                            </svg>
+                        </span>
+                        <span class="light-icon" style="display: none;">
+                            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16"
+                                class="w-5 h-5" id="theme-toggle-light-icon" height="1em" width="1em"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z">
+                                </path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Trade Logs Section -->
+    <div class="bg-zinc-200 dark:bg-gray-950 min-h-screen content" id="trade-logs">
+        <div class="container mx-auto p-6">
+            <div class="bg-slate-100 dark:bg-slate-900 shadow-2xl rounded-lg p-6">
+                <table class="table-auto w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                    id="data-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                Unique Id
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Type
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Request
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Response
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Alert At
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Created At
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Logs Section -->
+    <div class="bg-zinc-200 dark:bg-gray-950 min-h-screen content hidden" id="config">
+        <div class="container mx-auto p-6">
+            <div class="bg-slate-100 dark:bg-slate-900 shadow-2xl rounded-lg p-6">
+                <div class="flex items-center justify-end mb-4">
+                    <button type="button" data-modal-target="default-modal" data-modal-toggle="default-modal"
+                        class="py-2.5 px-5 me-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 inline-flex items-center cursor-pointer">
+                        <svg viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 me-2"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                            xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" fill="#9ca3af" stroke="#9ca3af">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <title>plus-circle</title>
+                                <desc>Created with Sketch Beta.</desc>
+                                <defs> </defs>
+                                <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"
+                                    sketch:type="MSPage">
+                                    <g id="Icon-Set" sketch:type="MSLayerGroup"
+                                        transform="translate(-464.000000, -1087.000000)" fill="#9ca3af">
+                                        <path
+                                            d="M480,1117 C472.268,1117 466,1110.73 466,1103 C466,1095.27 472.268,1089 480,1089 C487.732,1089 494,1095.27 494,1103 C494,1110.73 487.732,1117 480,1117 L480,1117 Z M480,1087 C471.163,1087 464,1094.16 464,1103 C464,1111.84 471.163,1119 480,1119 C488.837,1119 496,1111.84 496,1103 C496,1094.16 488.837,1087 480,1087 L480,1087 Z M486,1102 L481,1102 L481,1097 C481,1096.45 480.553,1096 480,1096 C479.447,1096 479,1096.45 479,1097 L479,1102 L474,1102 C473.447,1102 473,1102.45 473,1103 C473,1103.55 473.447,1104 474,1104 L479,1104 L479,1109 C479,1109.55 479.447,1110 480,1110 C480.553,1110 481,1109.55 481,1109 L481,1104 L486,1104 C486.553,1104 487,1103.55 487,1103 C487,1102.45 486.553,1102 486,1102 L486,1102 Z"
+                                            id="plus-circle" sketch:type="MSShapeGroup"> </path>
+                                    </g>
+                                </g>
+                            </g>
+                        </svg>
+                        Add
+                    </button>
+                </div>
+                <table class="table-auto w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                    id="config-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                Unique Id
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Total Trades
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Quantity
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Trades Per Day
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Created At
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Updated At
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config modal -->
+    <div id="default-modal" tabindex="-1" aria-hidden="true"
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <!-- Modal content -->
+            <form class="relative bg-white rounded-lg shadow dark:bg-gray-700" id="config-form">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Trade Config
+                    </h3>
+                    <button type="button"
+                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                        data-modal-hide="default-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-4 md:p-5 space-y-4">
+                    <div class="max-w-sm mx-auto">
+                        <div class="mb-5">
+                            <label for="quantity"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quantity</label>
+                            <input type="number" id="quantity" name="quantity"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                placeholder="100" />
+                        </div>
+                        <div class="mb-5">
+                            <label for="trade_per_day"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Trade Per
+                                Day</label>
+                            <input type="number" id="trade_per_day" name="trade_per_day"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                required placeholder="5" />
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal footer -->
+                <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                    <button type="submit" data-modal-hide="default-modal"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                    <button type="reset"
+                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let configTable = null;
+
+        const notyf = new Notyf({
+            duration: 3000,
+            position: {
+                x: 'right',
+                y: 'top',
+            },
+            types: [{
+                type: 'error',
+                dismissible: true
+            },
+            {
+                type: 'success',
+                dismissible: true
+            }
+            ]
+        });
+
+        const showAlert = (msg, type = "success") => {
+            type == "success" ? notyf.success({
+                message: msg
+            }) : notyf.error({
+                message: msg
+            });
+        }
+
+        const formatDate = (date) => {
+            const d = new Date(date);
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' };
+            const formattedDate = d.toLocaleString('en-US', options).replace(',', '');
+
+            return formattedDate;
+        }
+
+        const handleMode = () => {
+            // Check the mode from localStorage
+            if (localStorage.getItem('mode') === 'dark') {
+                $('body').addClass('dark');
+                $('.dark-icon').hide();
+                $('.light-icon').show();
+            } else {
+                $('body').removeClass('dark');
+                $('.dark-icon').show();
+                $('.light-icon').hide();
+            }
+
+            $('#mode').on('click', function () {
+                // Toggle the 'dark' class on the body
+                $('body').toggleClass('dark');
+
+                // Toggle visibility of icons
+                $('.dark-icon').toggle();
+                $('.light-icon').toggle();
+
+                // Save the current mode to localStorage
+                if ($('body').hasClass('dark')) {
+                    localStorage.setItem('mode', 'dark');
+                } else {
+                    localStorage.setItem('mode', 'light');
+                }
+            });
+        }
+
+        const handleNavbar = () => {
+            $('.navbar-link').click(function (e) {
+                e.preventDefault(); // Prevent the default link behavior
+
+                // Remove active classes
+                $('.navbar-link').removeClass('bg-gray-700 text-white').addClass('text-gray-400');
+                $(this).removeClass('text-gray-400').addClass('bg-gray-700 text-white');
+
+                // Hide all content divs
+                $('.content').hide();
+
+                // Show the target content
+                var target = $(this).data('target');
+                $(target).show();
+            });
+
+            $('.navbar-link').first().click();
+        }
+
+        const handleLogs = () => {
+            $.ajax({
+                url: "api/logs/fetch",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+
+                    const tableBody = $('#data-table tbody');
+                    tableBody.empty(); // Clear any existing rows
+
+                    data.logs.forEach(row => {
+                        tableBody.append(`<tr>
+                            <td class="px-6 py-4">${row.unique_id}</td>
+                            <td>${row.type}</td>
+                            <td><span>${row.request}</span></td>
+                            <td>${row.response}</td>
+                            <td>${row.status}</td>
+                            <td><span class="wrap-text">${formatDate(row.alert_at)}</span></td>
+                            <td><span class="wrap-text">${formatDate(row.createdAt)}</span></td>
+                        </tr>`);
+                    });
+                    new simpleDatatables.DataTable('#data-table', {
+                        searchable: true,
+                        sortable: false
+                    }); // Initialize DataTable after adding rows
+                },
+                error: function () {
+                    console.error("Failed to fetch data");
+                }
+            });
+        }
+
+        const handleConfigLogs = () => {
+            configTable && configTable.destroy();
+
+            $.ajax({
+                url: "api/logs/fetchconfig",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+
+                    const tableBody = $('#config-table tbody');
+                    tableBody.empty(); // Clear any existing rows
+
+                    data.logs.forEach(row => {
+                        tableBody.append(`<tr>
+                            <td class="px-6 py-4">${row.unique_id}</td>
+                            <td>${row.total_trades}</td>
+                            <td><span>${row.quantity}</span></td>
+                            <td>${row.trade_per_day}</td>
+                            <td><span class="wrap-text">${formatDate(row.createdAt)}</span></td>
+                            <td><span class="wrap-text">${formatDate(row.updatedAt)}</span></td>
+                        </tr>`);
+                    });
+                    configTable = new simpleDatatables.DataTable('#config-table', {
+                        searchable: true,
+                        sortable: false
+                    }); // Initialize DataTable after adding rows
+                },
+                error: function () {
+                    console.error("Failed to fetch data");
+                }
+            });
+        }
+
+        const handleConfigform = () => {
+            $('#config-form').on('submit', function (e) {
+                debugger;
+                e.preventDefault();
+                var formData = $("#config-form").serialize();
+
+                $.ajax({
+                    url: 'api/trade/updateDailyTradeConfig', // Replace with your server endpoint
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        response?.success && showAlert(response?.message);
+                        handleConfigLogs();
+                    },
+                    error: function (xhr, status, error) {
+                        showAlert(error, "error");
+                    }
+                });
+            });
+        }
+
+        $(document).ready(function () {
+
+            handleMode(); //handle dark mode and light mode
+            handleNavbar(); //handle navbar actions
+            handleLogs(); //handle and fetch trade logs 
+            handleConfigLogs(); //handle and fetch config logs 
+            handleConfigform(); //handle config form 
+        });
+    </script>
+</body>
+
+</html>
