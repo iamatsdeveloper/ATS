@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/logs', express.static('logs'))
 //#endregion
 
 //#region Routes
@@ -20,7 +21,7 @@ app.use("/api", commonroutes);
 //#endregion
 
 //#region MONGOOSE SETUP
-mongoose.connect(process.env.MONGO_URL, {
+mongoose.connect(process.env.MONGO_LOCAL_URL, {
     dbName: process.env.DATABASE_NAME
 }).then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));

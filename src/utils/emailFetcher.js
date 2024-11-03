@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import Imap from "imap";
 import { simpleParser } from "mailparser";
 import { handleTrade } from "../controllers/tradeController.js";
+import LogHelper from "../helpers/logHelper.js";
 
 // Load environment variables
 dotenv.config();
@@ -22,20 +23,21 @@ class EmailFetcher {
         this.imap = new Imap(this.imapConfig);
         this.setupListeners();
         this.intervalId = null; // Store the interval ID
+        this.logHelper = new LogHelper();
     }
 
     setupListeners() {
         this.imap.once('ready', () => {
-            console.log('IMAP connection is ready.');
+            this.logHelper.handleLog('IMAP connection is ready.');
             this.fetchUnreadEmails(); // Initial fetch
         });
 
         this.imap.once('error', (err) => {
-            console.error('IMAP Error: ', err);
+            this.logHelper.handleLog('IMAP Error: ' + err);
         });
 
         this.imap.once('end', () => {
-            console.log('Connection ended');
+            this.logHelper.handleLog('Connection ended');
         });
     }
 
@@ -43,7 +45,7 @@ class EmailFetcher {
         try {
             this.imap.connect();
         } catch (error) {
-            console.error('Error connecting to IMAP:', error);
+            this.logHelper.handleLog('Error connecting to IMAP:' + error);
         }
     }
 
@@ -62,11 +64,11 @@ class EmailFetcher {
 
         const from = email.from.value[0];
         const fromName = from.name;
-        
-        if(fromName == "TradingView" && email.subject === "Alert: 5EMA-RSI Buy/Sell") {
+
+        if (fromName == "TradingView" && email.subject === "Alert: 5EMA-RSI Buy/Sell") {
             const jsondata = JSON.parse(email.text.replace("\n", ""), null, 2);
             await handleTrade(jsondata, email.date);
-            console.log("success");
+            this.logHelper.handleLog('Success!');
         }
     }
 
@@ -78,7 +80,7 @@ class EmailFetcher {
                 if (err) throw err;
 
                 if (results.length === 0) {
-                    console.log('No new emails.');
+                    this.logHelper.handleLog('No new emails.');
                     return;
                 }
 
@@ -95,17 +97,17 @@ class EmailFetcher {
                         const uid = attrs.uid;
                         this.imap.addFlags(uid, ['\\Seen'], (err) => {
                             if (err) throw err;
-                            console.log('Marked as read!');
+                            this.logHelper.handleLog('Email Marked as read!');
                         });
                     });
                 });
 
                 f.on('end', () => {
-                    console.log('Done fetching new messages!');
+                    this.logHelper.handleLog('Done fetching new messages!');
                 });
             });
         } catch (error) {
-            console.error('Error fetching emails:', error);
+            this.logHelper.handleLog("Error fetching emails:" + error);
         }
     }
 
@@ -125,6 +127,7 @@ class EmailFetcher {
         if (this.intervalId) {
             clearInterval(this.intervalId);
             this.intervalId = null; // Reset the interval ID
+            this.logHelper.handleLog("Email Fetching Stopped");
         }
     }
 }
