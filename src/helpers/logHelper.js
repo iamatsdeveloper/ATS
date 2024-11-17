@@ -12,7 +12,13 @@ class LogHelper {
         const logEntry = `${currentDate} - ${message}\n`;
 
         // Append the log entry to the log file
-        fs.appendFile(this.logFilePath, logEntry);
+        fs.appendFile(this.logFilePath, logEntry, (err) => {
+            // if (err) {
+            //     console.error('Error writing to log file', err);
+            // } else {
+            //     console.log('Log entry added:', logEntry.trim());
+            // }
+        });
     }
 
     getDateTime = () => {
