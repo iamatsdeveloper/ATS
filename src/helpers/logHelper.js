@@ -8,17 +8,11 @@ class LogHelper {
     }
 
     handleLog(message) {
-        const currentDate = new Date().toLocaleString(); // Get current date and time in ISO format
+        const currentDate = getDateTime(); // Get current date and time in ISO format
         const logEntry = `${currentDate} - ${message}\n`;
 
         // Append the log entry to the log file
-        fs.appendFile(this.logFilePath, logEntry, (err) => {
-            if (err) {
-                console.error('Error writing to log file', err);
-            } else {
-                console.log('Log entry added:', logEntry.trim());
-            }
-        });
+        fs.appendFile(this.logFilePath, logEntry);
     }
 
     getDateTime = () => {

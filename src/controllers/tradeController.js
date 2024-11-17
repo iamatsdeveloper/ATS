@@ -40,7 +40,7 @@ export const handleTrade = async (jsondata, alertTime) => {
                 "Broker": jsondata[0].E,
                 "Setup": "5EMA RSI BUY/SELL",
                 "TradeStatus": "Closed",
-                "Action": jsondata[0].TT,
+                "Action": tradelog.type,
                 "Symbol": jsondata[0].TS,
                 "EntryDate": getFormattedDate(tradelog.createdAt),
                 "ExitDate": getFormattedDate(),
@@ -82,10 +82,11 @@ export const handleTrade = async (jsondata, alertTime) => {
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            message: "Success."
-        });
+        return;
+        // return res.status(200).json({
+        //     success: true,
+        //     message: "Success."
+        // });
 
     } catch (error) {
         console.log(error);
