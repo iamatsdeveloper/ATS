@@ -8,7 +8,7 @@ class LogHelper {
     }
 
     handleLog(message) {
-        const currentDate = getDateTime(); // Get current date and time in ISO format
+        const currentDate = this.getDateTime(); // Get current date and time in ISO format
         const logEntry = `${currentDate} - ${message}\n`;
 
         // Append the log entry to the log file
