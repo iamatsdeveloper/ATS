@@ -41,7 +41,7 @@ export const handleTrade = async (jsondata, alertTime) => {
                 "Broker": jsondata[0].E,
                 "Setup": "5EMA RSI BUY/SELL",
                 "TradeStatus": "Closed",
-                "Action": tradelog.type,
+                "Action": tradelogJson[0].TT,
                 "Symbol": jsondata[0].TS,
                 "EntryDate": getFormattedDate(tradelog.createdAt),
                 "ExitDate": getFormattedDate(),
@@ -66,7 +66,7 @@ export const handleTrade = async (jsondata, alertTime) => {
 
         const newLog = new TradeLogs({
             unique_id: UniqueId,
-            type: request == null ? "BUY" : "SELL",
+            type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
             request: JSON.stringify(requestJson),
             response: JSON.stringify({"success":true,"message":"Saved."}),
             alert_at: alertTime
