@@ -34,6 +34,7 @@ export const handleTrade = async (jsondata, alertTime) => {
         }
 
         if (exit || exit == "true") {
+            const tradelogJson = JSON.parse(tradelog.request);
 
             request = {
                 "Market": "CRYPTO",
@@ -44,7 +45,7 @@ export const handleTrade = async (jsondata, alertTime) => {
                 "Symbol": jsondata[0].TS,
                 "EntryDate": getFormattedDate(tradelog.createdAt),
                 "ExitDate": getFormattedDate(),
-                "EntryPrice": jsondata[0].EPRICE,
+                "EntryPrice": tradelogJson[0].EPRICE,
                 "ExitPrice": jsondata[0].PRICE,
                 "StopLoss": jsondata[0].SL,
                 "Quantity": quantity
@@ -70,6 +71,7 @@ export const handleTrade = async (jsondata, alertTime) => {
             response: JSON.stringify({"success":true,"message":"Saved."}),
             alert_at: alertTime
         });
+
         log = await newLog.save();
 
         if(request) {
