@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import commonroutes from "./src/routes/commonroutes.js";
+import { hanadleDailyTradeConfig } from "./src/controllers/tradeController.js";
 
 //#region CONFIGURATIONS
 dotenv.config();
@@ -23,7 +24,8 @@ app.use("/api", commonroutes);
 //#region MONGOOSE SETUP
 mongoose.connect(process.env.MONGO_URL, {
     dbName: process.env.DATABASE_NAME
-}).then(() => {
+}).then(async () => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+    await hanadleDailyTradeConfig();
 }).catch((error) => console.log(`${error} did not connect`));
 //#endregion

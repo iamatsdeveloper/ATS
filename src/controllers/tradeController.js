@@ -156,6 +156,20 @@ export const fetchConfigLogs = async (req, res) => {
     }
 };
 
+export const hanadleDailyTradeConfig = async () => {
+    const records = await getTodaysRecord();
+
+    if (records) {
+        //Start polling mail's
+        emailFetcher.connect();
+        emailFetcher.startPolling();
+
+        return true;
+    }
+
+    return false;
+}
+
 const getTodaysRecord = async (flag = false) => {
     try {
         const startOfToday = new Date();

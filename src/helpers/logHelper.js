@@ -13,11 +13,12 @@ class LogHelper {
 
         // Append the log entry to the log file
         fs.appendFile(this.logFilePath, logEntry, (err) => {
-            // if (err) {
-            //     console.error('Error writing to log file', err);
-            // } else {
-            //     console.log('Log entry added:', logEntry.trim());
-            // }
+            if (err) {
+                console.error('Error writing to log file', err);
+            } 
+            else {
+                console.log('Log entry added:', logEntry.trim());
+            }
         });
     }
 
