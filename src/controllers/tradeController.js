@@ -31,7 +31,7 @@ export const handleTrade = async (req, res) => {
         const exit = jsondata[0]?.EXIT;
 
         if (tradelog == null && (exit || exit == "true")) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Unable to process trade without entry."
             });
@@ -56,16 +56,17 @@ export const handleTrade = async (req, res) => {
             };
 
             if (records) {
-                await TradeConfig.findByIdAndUpdate(records._id, {
-                    total_trades: records.total_trades + 1,
-                });
 
                 if (records.total_trades + 1 >= records.trade_per_day) {
-                    return res.status(400).json({
+                    return res.status(200).json({
                         success: false,
                         message: "Daily Trade Limit Reached."
                     });
                 }
+                
+                await TradeConfig.findByIdAndUpdate(records._id, {
+                    total_trades: records.total_trades + 1,
+                });
             }
         }
 
