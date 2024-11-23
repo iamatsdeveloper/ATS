@@ -1,6 +1,6 @@
 import express from "express";
-import { fetchLogs } from "../controllers/logController.js";
-import { fetchConfigLogs, handleTrade, updateDailyTradeConfig } from "../controllers/tradeController.js";
+import { fetchConfigLogs, fetchLogs } from "../controllers/logController.js";
+import { handleTrade, handleTradeSettings } from "../controllers/tradeController.js";
 
 /* Routes */
 const router = express.Router();
@@ -10,7 +10,7 @@ router.get("/logs/fetch", fetchLogs);
 router.get("/logs/fetchconfig", fetchConfigLogs);
 
 //trade config
-router.post("/trade", handleTrade);
-router.post("/trade/updateDailyTradeConfig", updateDailyTradeConfig);
+router.post("/webhook/trade", handleTrade);
+router.post("/trade/settings", handleTradeSettings);
 
 export default router;

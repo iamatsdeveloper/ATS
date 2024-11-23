@@ -1,36 +1,40 @@
-
 import axios from "axios";
 import dotenv from "dotenv";
 import TradeLogs from "../models/tradeLogs.js";
 import TradeConfig from "../models/tradeConfig.js";
-import EmailFetcher from "../utils/emailFetcher.js";
+import TradeSettings from "../models/tradeSettings.js";
 
-//Mail Config and load environment variables
-const emailFetcher = new EmailFetcher();
+//load environment variables
 dotenv.config();
 
 /* Inserting/Updating TradeDetails */
-export const handleTrade = async (jsondata, alertTime) => {
-// export const handleTrade = async (req, res) => {
+export const handleTrade = async (req, res) => {
     let log = undefined;
     try {
 
-        // const { jsondata } = req.body;
+        const { TextBody: jsondata } = req.body;
 
-        // const now = new Date();
-        // const alertTime = now.toISOString();
+        const now = new Date();
+        const alertTime = now.toISOString();
         const UniqueId = Date.now();
         let request = null;
 
         const tradelog = await getTodaysRecord(true);
         const records = await getTodaysRecord();
 
+        if (!records) {
+            const records = await TradeSettings.findOne();
+            await updateDailyTradeConfig(records.quantity, records.trade_per_day);
+        }
+
         const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
         const exit = jsondata[0]?.EXIT;
 
-        if(tradelog == null && (exit || exit == "true"))
-        {
-            return;
+        if (tradelog == null && (exit || exit == "true")) {
+            return res.status(400).json({
+                success: false,
+                message: "Unable to process trade without entry."
+            });
         }
 
         if (exit || exit == "true") {
@@ -57,7 +61,10 @@ export const handleTrade = async (jsondata, alertTime) => {
                 });
 
                 if (records.total_trades + 1 >= records.trade_per_day) {
-                    emailFetcher.stopPolling();
+                    return res.status(400).json({
+                        success: false,
+                        message: "Daily Trade Limit Reached."
+                    });
                 }
             }
         }
@@ -68,15 +75,15 @@ export const handleTrade = async (jsondata, alertTime) => {
             unique_id: UniqueId,
             type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
             request: JSON.stringify(requestJson),
-            response: JSON.stringify({"success":true,"message":"Saved."}),
+            response: JSON.stringify({ "success": true, "message": "Saved." }),
             alert_at: alertTime
         });
 
         log = await newLog.save();
 
-        if(request) {
+        if (request) {
             const response = await axios.post(process.env.TRADE_URL, requestJson);
-    
+
             await TradeLogs.findByIdAndUpdate(log._id, {
                 response: JSON.stringify(response.data ?? ""),
                 status_code: response?.status,
@@ -84,11 +91,10 @@ export const handleTrade = async (jsondata, alertTime) => {
             });
         }
 
-        return;
-        // return res.status(200).json({
-        //     success: true,
-        //     message: "Success."
-        // });
+        return res.status(200).json({
+            success: true,
+            message: "Success."
+        });
 
     } catch (error) {
         console.log(error);
@@ -102,10 +108,41 @@ export const handleTrade = async (jsondata, alertTime) => {
 };
 
 /* Inserting/Updating TradeDetails */
-export const updateDailyTradeConfig = async (req, res) => {
+export const handleTradeSettings = async (req, res) => {
     try {
         const { quantity = null, trade_per_day = 3 } = req.body;
 
+        const records = await TradeSettings.findOne();
+
+        if (records) {
+            await TradeSettings.findByIdAndUpdate(records._id, {
+                quantity: quantity,
+                trade_per_day: trade_per_day
+            });
+        }
+        else {
+            const tradeSettings = new TradeSettings({
+                quantity: quantity,
+                trade_per_day: trade_per_day
+            });
+            await tradeSettings.save();
+        }
+
+        const status = await updateDailyTradeConfig(quantity, trade_per_day);
+
+        return res.status(200).json({
+            success: status,
+            message: status ? "Success." : "Failure."
+        });
+
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+/* Inserting/Updating TradeConfig */
+const updateDailyTradeConfig = async (quantity = null, trade_per_day = 3) => {
+    try {
         const records = await getTodaysRecord();
 
         if (records) {
@@ -124,51 +161,12 @@ export const updateDailyTradeConfig = async (req, res) => {
             await newconfig.save();
         }
 
-        //Start polling mail's
-        emailFetcher.connect();
-        emailFetcher.startPolling();
-
-        return res.status(200).json({
-            success: true,
-            message: "Success."
-        });
-
-    } catch (error) {
-        console.log(error);
-    }
-};
-
-export const fetchConfigLogs = async (req, res) => {
-    try {
-        const data = await TradeConfig.find().select('-_id unique_id total_trades quantity trade_per_day createdAt updatedAt');
-
-        return res.status(200).json({
-            success: true,
-            logs: data,
-            message: "Data Fetch Successfully."
-        });
-    } catch (error) {
-        if (error.response) {
-            console.error(`Error: ${error.response.status} ${error.response.statusText}`);
-        } else {
-            console.error(`Caught Error: ${error.message}`);
-        }
-    }
-};
-
-export const hanadleDailyTradeConfig = async () => {
-    const records = await getTodaysRecord();
-
-    if (records) {
-        //Start polling mail's
-        emailFetcher.connect();
-        emailFetcher.startPolling();
-
         return true;
-    }
 
-    return false;
-}
+    } catch (error) {
+        return false;
+    }
+};
 
 const getTodaysRecord = async (flag = false) => {
     try {
@@ -179,7 +177,7 @@ const getTodaysRecord = async (flag = false) => {
         endOfToday.setHours(23, 59, 59, 999); // Set to the end of the day
 
         let records = null;
-        if(flag) {
+        if (flag) {
             records = await TradeLogs.findOne({
                 createdAt: {
                     $gte: startOfToday,
@@ -204,12 +202,12 @@ const getTodaysRecord = async (flag = false) => {
 
 const getFormattedDate = (date = null) => {
     const now = date == null ? new Date() : new Date(date);
-  
+
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so we add 1
     const day = String(now.getDate()).padStart(2, '0');
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-  
+
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
