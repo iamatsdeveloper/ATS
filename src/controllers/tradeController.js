@@ -12,7 +12,8 @@ export const handleTrade = async (req, res) => {
     let log = undefined;
     try {
 
-        const { TextBody: jsondata } = req.body;
+        const { TextBody: data } = req.body;
+        const jsondata = JSON.parse(data.text.replace("\n", ""), null, 2);
 
         if(Array.isArray(jsondata)) {
 
@@ -101,7 +102,7 @@ export const handleTrade = async (req, res) => {
         }
         else {
             console.log(jsondata);
-            
+
             return res.status(200).json({
                 success: false,
                 message: "Invalid Request."
