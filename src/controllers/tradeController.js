@@ -27,7 +27,7 @@ export const handleTrade = async (req, res) => {
                 let request = null;
         
                 const tradelog = await getTodaysRecord(true);
-                const records = await getTodaysRecord();
+                let records = await getTodaysRecord();
         
                 if (!records) {
                     const records = await TradeSettings.findOne();
