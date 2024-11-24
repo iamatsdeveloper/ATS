@@ -144,7 +144,7 @@ export const handleTradeSettings = async (req, res) => {
 
 const processTrade = async (requestJson) => {
     try {
-        const response = await axios.post(process.env.TRADE_URL, requestJson);
+        const response = await axios.post(process.env.TRADE_URL, requestJson, { timeout: 120000 });
 
         await TradeLogs.findByIdAndUpdate(log._id, {
             response: JSON.stringify(response.data ?? ""),
