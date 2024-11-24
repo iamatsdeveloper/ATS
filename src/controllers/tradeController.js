@@ -63,7 +63,7 @@ export const handleTrade = async (req, res) => {
 
                     if (records) {
 
-                        if (records.total_trades + 1 >= records.trade_per_day) {
+                        if (records.total_trades >= records.trade_per_day) {
                             return res.status(200).json({
                                 success: false,
                                 message: "Daily Trade Limit Reached."
