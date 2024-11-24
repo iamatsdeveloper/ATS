@@ -14,88 +14,99 @@ export const handleTrade = async (req, res) => {
 
         const { TextBody: jsondata } = req.body;
 
-        const now = new Date();
-        const alertTime = now.toISOString();
-        const UniqueId = Date.now();
-        let request = null;
+        if(Array.isArray(jsondata)) {
 
-        const tradelog = await getTodaysRecord(true);
-        const records = await getTodaysRecord();
-
-        if (!records) {
-            const records = await TradeSettings.findOne();
-            await updateDailyTradeConfig(records.quantity, records.trade_per_day);
-        }
-
-        const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
-        const exit = jsondata[0]?.EXIT;
-
-        if (tradelog == null && (exit || exit == "true")) {
-            return res.status(200).json({
-                success: false,
-                message: "Unable to process trade without entry."
-            });
-        }
-
-        if (exit || exit == "true") {
-            const tradelogJson = JSON.parse(tradelog.request);
-
-            request = {
-                "Market": "CRYPTO",
-                "Broker": jsondata[0].E,
-                "Setup": "5EMA RSI BUY/SELL",
-                "TradeStatus": "Closed",
-                "Action": tradelogJson[0].TT,
-                "Symbol": jsondata[0].TS,
-                "EntryDate": getFormattedDate(tradelog.createdAt),
-                "ExitDate": getFormattedDate(),
-                "EntryPrice": tradelogJson[0].EPRICE,
-                "ExitPrice": jsondata[0].PRICE,
-                "StopLoss": jsondata[0].SL,
-                "Quantity": quantity
-            };
-
-            if (records) {
-
-                if (records.total_trades + 1 >= records.trade_per_day) {
-                    return res.status(200).json({
-                        success: false,
-                        message: "Daily Trade Limit Reached."
-                    });
-                }
-                
-                await TradeConfig.findByIdAndUpdate(records._id, {
-                    total_trades: records.total_trades + 1,
+            const now = new Date();
+            const alertTime = now.toISOString();
+            const UniqueId = Date.now();
+            let request = null;
+    
+            const tradelog = await getTodaysRecord(true);
+            const records = await getTodaysRecord();
+    
+            if (!records) {
+                const records = await TradeSettings.findOne();
+                await updateDailyTradeConfig(records.quantity, records.trade_per_day);
+            }
+    
+            const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
+            const exit = jsondata[0]?.EXIT;
+    
+            if (tradelog == null && (exit || exit == "true")) {
+                return res.status(200).json({
+                    success: false,
+                    message: "Unable to process trade without entry."
                 });
             }
-        }
-
-        const requestJson = request == null ? jsondata : request;
-
-        const newLog = new TradeLogs({
-            unique_id: UniqueId,
-            type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
-            request: JSON.stringify(requestJson),
-            response: JSON.stringify({ "success": true, "message": "Saved." }),
-            alert_at: alertTime
-        });
-
-        log = await newLog.save();
-
-        if (request) {
-            const response = await axios.post(process.env.TRADE_URL, requestJson);
-
-            await TradeLogs.findByIdAndUpdate(log._id, {
-                response: JSON.stringify(response.data ?? ""),
-                status_code: response?.status,
-                status: true
+    
+            if (exit || exit == "true") {
+                const tradelogJson = JSON.parse(tradelog.request);
+    
+                request = {
+                    "Market": "CRYPTO",
+                    "Broker": jsondata[0].E,
+                    "Setup": "5EMA RSI BUY/SELL",
+                    "TradeStatus": "Closed",
+                    "Action": tradelogJson[0].TT,
+                    "Symbol": jsondata[0].TS,
+                    "EntryDate": getFormattedDate(tradelog.createdAt),
+                    "ExitDate": getFormattedDate(),
+                    "EntryPrice": tradelogJson[0].EPRICE,
+                    "ExitPrice": jsondata[0].PRICE,
+                    "StopLoss": jsondata[0].SL,
+                    "Quantity": quantity
+                };
+    
+                if (records) {
+    
+                    if (records.total_trades + 1 >= records.trade_per_day) {
+                        return res.status(200).json({
+                            success: false,
+                            message: "Daily Trade Limit Reached."
+                        });
+                    }
+                    
+                    await TradeConfig.findByIdAndUpdate(records._id, {
+                        total_trades: records.total_trades + 1,
+                    });
+                }
+            }
+    
+            const requestJson = request == null ? jsondata : request;
+    
+            const newLog = new TradeLogs({
+                unique_id: UniqueId,
+                type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
+                request: JSON.stringify(requestJson),
+                response: JSON.stringify({ "success": true, "message": "Saved." }),
+                alert_at: alertTime
+            });
+    
+            log = await newLog.save();
+    
+            if (request) {
+                const response = await axios.post(process.env.TRADE_URL, requestJson);
+    
+                await TradeLogs.findByIdAndUpdate(log._id, {
+                    response: JSON.stringify(response.data ?? ""),
+                    status_code: response?.status,
+                    status: true
+                });
+            }
+    
+            return res.status(200).json({
+                success: true,
+                message: "Success."
             });
         }
-
-        return res.status(200).json({
-            success: true,
-            message: "Success."
-        });
+        else {
+            console.log(jsondata);
+            
+            return res.status(200).json({
+                success: false,
+                message: "Invalid Request."
+            });
+        }
 
     } catch (error) {
         console.log(error);
