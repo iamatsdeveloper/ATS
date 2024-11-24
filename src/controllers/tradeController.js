@@ -14,10 +14,10 @@ export const handleTrade = async (req, res) => {
 
         const { TextBody: data } = req.body;
         
-        console.log(req.body);
+        console.log(data);
         
-        if(data !== undefined) {
-            const jsondata = JSON.parse(data.text?.replace("\n", ""), null, 2);
+        if(data !== undefined && data !== "023147 is your TradingView account verification code\n") {
+            const jsondata = JSON.parse(data?.replace("\n", ""), null, 2);
     
             if(Array.isArray(jsondata)) {
     
@@ -32,6 +32,7 @@ export const handleTrade = async (req, res) => {
                 if (!records) {
                     const records = await TradeSettings.findOne();
                     await updateDailyTradeConfig(records.quantity, records.trade_per_day);
+                    records = await getTodaysRecord();
                 }
         
                 const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
