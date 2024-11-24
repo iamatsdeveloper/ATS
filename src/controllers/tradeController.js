@@ -13,41 +13,39 @@ export const handleTrade = async (req, res) => {
     try {
 
         const { TextBody: data } = req.body;
-        
-        console.log(data);
-        
-        if(data !== undefined && data !== "023147 is your TradingView account verification code\n") {
+
+        if (data !== undefined) {
             const jsondata = JSON.parse(data?.replace("\n", ""), null, 2);
-    
-            if(Array.isArray(jsondata)) {
-    
+
+            if (Array.isArray(jsondata)) {
+
                 const now = new Date();
                 const alertTime = now.toISOString();
                 const UniqueId = Date.now();
                 let request = null;
-        
+
                 const tradelog = await getTodaysRecord(true);
                 let records = await getTodaysRecord();
-        
+
                 if (!records) {
                     const records = await TradeSettings.findOne();
                     await updateDailyTradeConfig(records.quantity, records.trade_per_day);
                     records = await getTodaysRecord();
                 }
-        
+
                 const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
                 const exit = jsondata[0]?.EXIT;
-        
+
                 if (tradelog == null && (exit || exit == "true")) {
                     return res.status(200).json({
                         success: false,
                         message: "Unable to process trade without entry."
                     });
                 }
-        
+
                 if (exit || exit == "true") {
                     const tradelogJson = JSON.parse(tradelog.request);
-        
+
                     request = {
                         "Market": "CRYPTO",
                         "Broker": jsondata[0].E,
@@ -62,24 +60,24 @@ export const handleTrade = async (req, res) => {
                         "StopLoss": jsondata[0].SL,
                         "Quantity": quantity
                     };
-        
+
                     if (records) {
-        
+
                         if (records.total_trades + 1 >= records.trade_per_day) {
                             return res.status(200).json({
                                 success: false,
                                 message: "Daily Trade Limit Reached."
                             });
                         }
-                        
+
                         await TradeConfig.findByIdAndUpdate(records._id, {
                             total_trades: records.total_trades + 1,
                         });
                     }
                 }
-        
+
                 const requestJson = request == null ? jsondata : request;
-        
+
                 const newLog = new TradeLogs({
                     unique_id: UniqueId,
                     type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
@@ -87,19 +85,13 @@ export const handleTrade = async (req, res) => {
                     response: JSON.stringify({ "success": true, "message": "Saved." }),
                     alert_at: alertTime
                 });
-        
+
                 log = await newLog.save();
-        
+
                 if (request) {
-                    const response = await axios.post(process.env.TRADE_URL, requestJson);
-        
-                    await TradeLogs.findByIdAndUpdate(log._id, {
-                        response: JSON.stringify(response.data ?? ""),
-                        status_code: response?.status,
-                        status: true
-                    });
+                    await processTrade(requestJson);
                 }
-        
+
                 return res.status(200).json({
                     success: true,
                     message: "Success."
@@ -114,12 +106,6 @@ export const handleTrade = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-
-        await TradeLogs.findByIdAndUpdate(log._id, {
-            response: error.response,
-            status_code: error?.response?.status,
-            status: false
-        });
     }
 };
 
@@ -155,6 +141,24 @@ export const handleTradeSettings = async (req, res) => {
         console.log(error);
     }
 };
+
+const processTrade = async (requestJson) => {
+    try {
+        const response = await axios.post(process.env.TRADE_URL, requestJson);
+
+        await TradeLogs.findByIdAndUpdate(log._id, {
+            response: JSON.stringify(response.data ?? ""),
+            status_code: response?.status,
+            status: true
+        });
+    }
+    catch (error) {
+        if (error?.response?.status == 503) {
+            console.log('retry');
+            return await processTrade(requestJson);
+        }
+    }
+}
 
 /* Inserting/Updating TradeConfig */
 const updateDailyTradeConfig = async (quantity = null, trade_per_day = 3) => {
