@@ -5,7 +5,9 @@ import TradeLogs from "../models/tradeLogs.js";
 /* Fetching logs */
 export const fetchLogs = async (req, res) => {
     try {
-        const data = await TradeLogs.find().select('-_id unique_id type request response status_code status alert_at createdAt updatedAt');
+        const data = await TradeLogs.find()
+        .select('-_id unique_id type request response status_code status alert_at createdAt updatedAt')
+        .sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,
@@ -23,7 +25,9 @@ export const fetchLogs = async (req, res) => {
 
 export const fetchConfigLogs = async (req, res) => {
     try {
-        const data = await TradeConfig.find().select('-_id unique_id total_trades quantity trade_per_day createdAt updatedAt');
+        const data = await TradeConfig.find()
+        .select('-_id unique_id total_trades quantity trade_per_day createdAt updatedAt')
+        .sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,

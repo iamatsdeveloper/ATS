@@ -25,10 +25,12 @@ export const handleTrade = async (req, res) => {
                 let request = null;
 
                 const tradelog = await getTodaysRecord(true);
+                const tradelogJson = JSON.parse(tradelog.request);
+                
                 let records = await getTodaysRecord();
 
                 if (!records) {
-                    const records = await TradeSettings.findOne();
+                    let records = await TradeSettings.findOne();
                     await updateDailyTradeConfig(records.quantity, records.trade_per_day);
                     records = await getTodaysRecord();
                 }
@@ -44,7 +46,6 @@ export const handleTrade = async (req, res) => {
                 }
 
                 if (exit || exit == "true") {
-                    const tradelogJson = JSON.parse(tradelog.request);
 
                     request = {
                         "Market": "CRYPTO",
@@ -80,7 +81,7 @@ export const handleTrade = async (req, res) => {
 
                 const newLog = new TradeLogs({
                     unique_id: UniqueId,
-                    type: request == null ? jsondata[0].TT : `EXIT ${jsondata[0].TT}`,
+                    type: request == null ? jsondata[0].TT : `EXIT ${tradelogJson[0].TT}`,
                     request: JSON.stringify(requestJson),
                     response: JSON.stringify({ "success": true, "message": "Saved." }),
                     alert_at: alertTime
@@ -89,7 +90,7 @@ export const handleTrade = async (req, res) => {
                 log = await newLog.save();
 
                 if (request) {
-                    await processTrade(requestJson);
+                    // await processTrade(requestJson);
                 }
 
                 return res.status(200).json({
