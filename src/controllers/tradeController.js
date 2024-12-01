@@ -9,11 +9,11 @@ dotenv.config();
 
 /* Inserting/Updating TradeDetails */
 export const handleTrade = async (req, res) => {
+    let log = null;
     try {
 
         const { textBody: data, date: alertTime } = req.body;
 
-        console.log(data);
         if (data !== undefined) {
             const jsondata = JSON.parse(data.replace("\n", ""), null, 2);
 
