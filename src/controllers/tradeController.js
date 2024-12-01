@@ -9,23 +9,21 @@ dotenv.config();
 
 /* Inserting/Updating TradeDetails */
 export const handleTrade = async (req, res) => {
-    let log = undefined;
     try {
 
-        const { TextBody: data } = req.body;
+        const { textBody: data, date: alertTime } = req.body;
 
+        console.log(data);
         if (data !== undefined) {
-            const jsondata = JSON.parse(data?.replace("\n", ""), null, 2);
+            const jsondata = JSON.parse(data.replace("\n", ""), null, 2);
 
             if (Array.isArray(jsondata)) {
 
-                const now = new Date();
-                const alertTime = now.toISOString();
                 const UniqueId = Date.now();
                 let request = null;
 
                 const tradelog = await getTodaysRecord(true);
-                const tradelogJson = JSON.parse(tradelog.request);
+                let tradelogJson = null;
                 
                 let records = await getTodaysRecord();
 
@@ -46,7 +44,7 @@ export const handleTrade = async (req, res) => {
                 }
 
                 if (exit || exit == "true") {
-
+                    tradelogJson = JSON.parse(tradelog.request);
                     request = {
                         "Market": "CRYPTO",
                         "Broker": jsondata[0].E,
@@ -90,7 +88,7 @@ export const handleTrade = async (req, res) => {
                 log = await newLog.save();
 
                 if (request) {
-                    // await processTrade(requestJson);
+                    await processTrade(requestJson);
                 }
 
                 return res.status(200).json({
