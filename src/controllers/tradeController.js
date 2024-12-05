@@ -24,7 +24,7 @@ export const handleTrade = async (req, res) => {
 
                 const tradelog = await getTodaysRecord(true);
                 let tradelogJson = null;
-                
+
                 let records = await getTodaysRecord();
 
                 if (!records) {
@@ -143,13 +143,18 @@ export const handleTradeSettings = async (req, res) => {
 
 const processTrade = async (requestJson) => {
     try {
-        const response = await axios.post(process.env.TRADE_URL, requestJson, { timeout: 120000 });
 
-        await TradeLogs.findByIdAndUpdate(log._id, {
-            response: JSON.stringify(response.data ?? ""),
-            status_code: response?.status,
-            status: true
-        });
+        const server = await axios.get("https://tradex.onrender.com", undefined, { timeout: 120000 });
+
+        if (server?.status == 200) {
+            const response = await axios.post(process.env.TRADE_URL, requestJson, { timeout: 120000 });
+
+            await TradeLogs.findByIdAndUpdate(log._id, {
+                response: JSON.stringify(response.data ?? ""),
+                status_code: response?.status,
+                status: true
+            });
+        }
     }
     catch (error) {
         if (error?.response?.status == 503) {
