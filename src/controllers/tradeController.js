@@ -157,10 +157,7 @@ const processTrade = async (requestJson, id) => {
         }
     }
     catch (error) {
-        if (error?.response?.status == 503) {
-            console.log('retry');
-            return await processTrade(requestJson, id);
-        }
+        console.log(error);
     }
 }
 
