@@ -88,7 +88,7 @@ export const handleTrade = async (req, res) => {
                 log = await newLog.save();
 
                 if (request) {
-                    await processTrade(requestJson);
+                    await processTrade(requestJson, log._id);
                 }
 
                 return res.status(200).json({
@@ -141,7 +141,7 @@ export const handleTradeSettings = async (req, res) => {
     }
 };
 
-const processTrade = async (requestJson) => {
+const processTrade = async (requestJson, id) => {
     try {
 
         const server = await axios.get("https://tradex.onrender.com", undefined, { timeout: 120000 });
@@ -149,7 +149,7 @@ const processTrade = async (requestJson) => {
         if (server?.status == 200) {
             const response = await axios.post(process.env.TRADE_URL, requestJson, { timeout: 120000 });
 
-            await TradeLogs.findByIdAndUpdate(log._id, {
+            await TradeLogs.findByIdAndUpdate(id, {
                 response: JSON.stringify(response.data ?? ""),
                 status_code: response?.status,
                 status: true
