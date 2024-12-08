@@ -28,8 +28,8 @@ export const handleTrade = async (req, res) => {
                 let records = await getTodaysRecord();
 
                 if (!records) {
-                    let records = await TradeSettings.findOne();
-                    await updateDailyTradeConfig(records.quantity, records.trade_per_day);
+                    let tradeRecords = await TradeSettings.findOne();
+                    await updateDailyTradeConfig(tradeRecords.quantity, tradeRecords.trade_per_day);
                     records = await getTodaysRecord();
                 }
 
