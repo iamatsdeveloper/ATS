@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import TradeLogs from "../models/tradeLogs.js";
 import TradeConfig from "../models/tradeConfig.js";
 import TradeSettings from "../models/tradeSettings.js";
+import { countDecimalPlaces, getFormattedDate } from "../helpers/comnFuncHelper.js";
 
 //load environment variables
 dotenv.config();
@@ -44,7 +45,11 @@ export const handleTrade = async (req, res) => {
                 }
 
                 if (exit || exit == "true") {
+
                     tradelogJson = JSON.parse(tradelog.request);
+                    jsondata[0].EPRICE = tradelogJson[0].EPRICE;
+                    const exitPrice = await getCalculatedAvgPrice(jsondata, quantity);
+
                     request = {
                         "Market": "CRYPTO",
                         "Broker": jsondata[0].E,
@@ -55,7 +60,7 @@ export const handleTrade = async (req, res) => {
                         "EntryDate": getFormattedDate(tradelog.createdAt),
                         "ExitDate": getFormattedDate(),
                         "EntryPrice": tradelogJson[0].EPRICE,
-                        "ExitPrice": jsondata[0].PRICE,
+                        "ExitPrice": exitPrice !== 0 ? exitPrice : jsondata[0].PRICE,
                         "StopLoss": jsondata[0].SL,
                         "Quantity": quantity
                     };
@@ -111,19 +116,25 @@ export const handleTrade = async (req, res) => {
 /* Inserting/Updating TradeDetails */
 export const handleTradeSettings = async (req, res) => {
     try {
-        const { quantity = null, trade_per_day = 3 } = req.body;
+        const { quantity = null, trade_per_day = 3, target1 = null, target2 = null, target3 = null } = req.body;
 
         const records = await TradeSettings.findOne();
 
         if (records) {
             await TradeSettings.findByIdAndUpdate(records._id, {
                 quantity: quantity,
+                target_1: target1,
+                target_2: target2,
+                target_3: target3,
                 trade_per_day: trade_per_day
             });
         }
         else {
             const tradeSettings = new TradeSettings({
                 quantity: quantity,
+                target_1: target1,
+                target_2: target2,
+                target_3: target3,
                 trade_per_day: trade_per_day
             });
             await tradeSettings.save();
@@ -140,6 +151,26 @@ export const handleTradeSettings = async (req, res) => {
         console.log(error);
     }
 };
+
+const getCalculatedAvgPrice = async (request, quantity) => {
+
+    const qTraded = request[0]?.EPRICE * quantity;
+
+    const target1 = request[0]?.TP1 ? (request[0]?.TT == "BUY" ? (request[0]?.TP1 * quantity - qTraded) * 50 / 100 : (qTraded - request[0]?.TP1 * quantity) * 50 / 100) : 0;
+    const target2 = request[0]?.TP2 ? (request[0]?.TT == "BUY" ? (request[0]?.TP2 * quantity - qTraded) * 25 / 100 : (qTraded - request[0]?.TP2 * quantity) * 25 / 100) : 0;
+    const target3 = request[0]?.TP3 ? (request[0]?.TT == "BUY" ? (request[0]?.TP3 * quantity - qTraded) * 25 / 100 : (qTraded - request[0]?.TP3 * quantity) * 25 / 100) : 0;
+
+    const totalRevenue = request[0]?.TT == "SELL" ? (qTraded - (target1 + target2 + target3)) : ((target1 + target2 + target3) + qTraded);
+    let totalQSold = (request[0]?.TP1 ? (quantity * 50 / 100) : 0) + (request[0]?.TP2 ? (quantity * 25 / 100) : 0) + (request[0]?.TP3 ? (quantity * 25 / 100) : 0);
+
+    if(request[0]?.EXIT == true) {
+        totalQSold += quantity - totalQSold != 0 ? quantity - totalQSold : 0;
+    }
+    const averagePrice = Math.abs(totalRevenue / totalQSold);
+
+    const decimalNo = countDecimalPlaces(request[0]?.EPRICE);
+    return averagePrice == request[0]?.EPRICE ? 0 : parseFloat(averagePrice.toFixed(decimalNo));
+}
 
 const processTrade = async (requestJson, id) => {
     try {
@@ -189,6 +220,20 @@ const updateDailyTradeConfig = async (quantity = null, trade_per_day = 3) => {
     }
 };
 
+export const deleteData = async (req, res) => {
+    const { isDelete } = req.body;
+
+    if(isDelete) {
+        await TradeConfig.deleteMany();
+        await TradeLogs.deleteMany();
+
+        return res.status(200).json({
+            success: true,
+            message: "Success."
+        });
+    }
+}
+
 const getTodaysRecord = async (flag = false) => {
     try {
         const startOfToday = new Date();
@@ -220,15 +265,3 @@ const getTodaysRecord = async (flag = false) => {
         console.log(error);
     }
 };
-
-const getFormattedDate = (date = null) => {
-    const now = date == null ? new Date() : new Date(date);
-
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so we add 1
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
