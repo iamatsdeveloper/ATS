@@ -160,6 +160,8 @@ const getCalculatedAvgPrice = async (request, quantity) => {
     const target2 = request[0]?.TP2 != '0' ? (request[0]?.TT == "BUY" ? (request[0]?.TP2 * quantity - qTraded) * 25 / 100 : (qTraded - request[0]?.TP2 * quantity) * 25 / 100) : 0;
     const target3 = request[0]?.TP3 != '0' ? (request[0]?.TT == "BUY" ? (request[0]?.TP3 * quantity - qTraded) * 25 / 100 : (qTraded - request[0]?.TP3 * quantity) * 25 / 100) : 0;
 
+    if(target1 == '0' && target2 == '0' && target3 == '0') return 0;
+
     const totalRevenue = request[0]?.TT == "SELL" ? (qTraded - (target1 + target2 + target3)) : ((target1 + target2 + target3) + qTraded);
     let totalQSold = (request[0]?.TP1 ? (quantity * 50 / 100) : 0) + (request[0]?.TP2 ? (quantity * 25 / 100) : 0) + (request[0]?.TP3 ? (quantity * 25 / 100) : 0);
 
