@@ -34,6 +34,13 @@ export const handleTrade = async (req, res) => {
                     records = await getTodaysRecord();
                 }
 
+                if (records.total_trades >= records.trade_per_day) {
+                    return res.status(200).json({
+                        success: false,
+                        message: "Daily Trade Limit Reached."
+                    });
+                }
+
                 const quantity = records.quantity !== null ? records.quantity : jsondata[0].Q;
                 const exit = jsondata[0]?.EXIT;
 
@@ -66,14 +73,6 @@ export const handleTrade = async (req, res) => {
                     };
 
                     if (records) {
-
-                        if (records.total_trades >= records.trade_per_day) {
-                            return res.status(200).json({
-                                success: false,
-                                message: "Daily Trade Limit Reached."
-                            });
-                        }
-
                         await TradeConfig.findByIdAndUpdate(records._id, {
                             total_trades: records.total_trades + 1,
                         });
