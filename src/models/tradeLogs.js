@@ -7,6 +7,10 @@ const TradeLogsSechma = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        trade_id: {
+            type: Number,
+            required: true,
+        },
         type: {
             type: String,
             required: true,

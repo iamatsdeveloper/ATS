@@ -76,11 +76,14 @@
                             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
                             <a href="#"
                                 class="navbar-link rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                                data-target="#trade-table-section">Trades</a>
+                            <a href="#"
+                                class="navbar-link rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                                 data-target="#trade-logs">Trade
                                 Logs</a>
                             <a href="#"
                                 class="navbar-link rounded-md px-3 py-2 text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
-                                data-target="#config">Config</a>
+                                data-target="#config">Settings</a>
                         </div>
                     </div>
                 </div>
@@ -106,10 +109,12 @@
                             </svg>
                         </span>
                     </button>
-                    <button type="button" id="settings" data-modal-target="default-modal" data-modal-toggle="default-modal"
+                    <button type="button" id="settings" data-modal-target="default-modal"
+                        data-modal-toggle="default-modal"
                         class="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white focus:outline-none rounded-lg text-sm p-2.5">
                         <span class="">
-                            <svg class="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
                                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
                                 <g id="SVGRepo_iconCarrier">
@@ -125,6 +130,46 @@
         </div>
     </nav>
 
+    <!-- Trades Section -->
+    <div class="bg-zinc-200 dark:bg-gray-950 min-h-screen content" id="trade-table-section">
+        <div class="container mx-auto p-6">
+            <div class="bg-slate-100 dark:bg-slate-900 shadow-2xl rounded-lg p-6">
+                <table class="table-auto w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                    id="trade-table">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="px-6 py-3">
+                                Trade Id
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Action
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                PnL
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Stop Loss
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Quantity
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Created At
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Updated At
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Trade Logs Section -->
     <div class="bg-zinc-200 dark:bg-gray-950 min-h-screen content" id="trade-logs">
         <div class="container mx-auto p-6">
@@ -134,7 +179,7 @@
                     <thead>
                         <tr>
                             <th scope="col" class="px-6 py-3">
-                                Unique Id
+                                Trade Id
                             </th>
                             <th scope="col" class="px-6 py-3">
                                 Type
@@ -204,7 +249,7 @@
         class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
         <div class="relative p-4 w-full max-w-md max-h-full">
             <!-- Modal content -->
-            <form class="relative bg-white rounded-lg shadow dark:bg-gray-700" id="settings-form">
+            <form class="relative bg-white rounded-lg shadow dark:bg-gray-700" id="settings-form" novalidate>
                 <!-- Modal header -->
                 <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -243,15 +288,35 @@
                         </div>
                         <div class="flex items-center space-between">
                             <div class="mb-5 me-2">
+                                <label for="risk_per_trade"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Risk Per
+                                    Trade</label>
+                                <input type="number" id="risk_per_trade" name="risk_per_trade"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    required placeholder="1" />
+                            </div>
+                            <div class="mb-5 ms-2">
+                                <label for="risk_per_day"
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Risk Per
+                                    Day</label>
+                                <input type="number" id="risk_per_day" name="risk_per_day"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    required placeholder="5" />
+                            </div>
+                        </div>
+                        <div class="flex items-center space-between">
+                            <div class="mb-5 me-2">
                                 <label for="target1"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Target 1</label>
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Target
+                                    1</label>
                                 <input type="number" id="target1" name="target1"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     required placeholder="50" />
                             </div>
                             <div class="mb-5 ms-2">
                                 <label for="target2"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Target 2</label>
+                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Target
+                                    2</label>
                                 <input type="number" id="target2" name="target2"
                                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     required placeholder="25" />
@@ -270,8 +335,8 @@
                 <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                     <button type="submit" data-modal-hide="default-modal"
                         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-                    <button type="reset"
-                        class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Reset</button>
+                    <button type="button" id="delete-btn"
+                        class="py-2.5 px-5 ms-3 text-sm font-medium text-white focus:outline-none bg-red-600 rounded-lg border border-red-600 hover:bg-red-800 focus:z-10 focus:ring-4 focus:ring-red-800 dark:focus:ring-red-800 dark:text-white">Delete</button>
                 </div>
             </form>
         </div>
@@ -373,7 +438,7 @@
 
                     data.logs.forEach(row => {
                         tableBody.append(`<tr>
-                            <td class="px-6 py-4">${row.unique_id}</td>
+                            <td class="px-6 py-4">${row.trade_id}</td>
                             <td>${row.type}</td>
                             <td><span>${row.request}</span></td>
                             <td>${row.response}</td>
@@ -384,6 +449,39 @@
                         </tr>`);
                     });
                     new simpleDatatables.DataTable('#data-table', {
+                        searchable: true,
+                        sortable: false
+                    }); // Initialize DataTable after adding rows
+                },
+                error: function () {
+                    console.error("Failed to fetch data");
+                }
+            });
+        }
+
+        const handleTrades = () => {
+            $.ajax({
+                url: "api/logs/fetchTrades",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+
+                    const tableBody = $('#trade-table tbody');
+                    tableBody.empty(); // Clear any existing rows
+
+                    data.trades.forEach(row => {
+                        tableBody.append(`<tr>
+                            <td class="px-6 py-4">${row.trade_id}</td>
+                            <td>${row.status}</td>
+                            <td><span>${row.action}</span></td>
+                            <td>${row.pnl}</td>
+                            <td>${row.stoploss}</td>
+                            <td>${row.quantity}</td>
+                            <td><span class="wrap-text">${formatDate(row.createdAt)}</span></td>
+                            <td><span class="wrap-text">${formatDate(row.updatedAt)}</span></td>
+                        </tr>`);
+                    });
+                    new simpleDatatables.DataTable('#trade-table', {
                         searchable: true,
                         sortable: false
                     }); // Initialize DataTable after adding rows
@@ -448,13 +546,60 @@
             });
         }
 
-        $(document).ready(function () {
+        const handleDeleteData = () => {
+            $("#delete-btn").click(() => {
+                let text = "Are you sure you delete all data";
+                if (confirm(text) == true) {
+                    $.ajax({
+                        url: 'api/deletedata', // Replace with your server endpoint
+                        type: 'POST',
+                        data: { "isDelete": true },
+                        success: function (response) {
+                            response?.success && showAlert(response?.message);
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        },
+                        error: function (xhr, status, error) {
+                            showAlert(error, "error");
+                        }
+                    });
+                }
+            });
+        }
 
+        const handleTradeSettingsData = () => {
+            $.ajax({
+                url: "api/logs/fetchTradeSettings",
+                type: "GET",
+                dataType: 'json',
+                success: function (data) {
+                    let settingData = data?.settings;
+                    if(settingData) {
+                        $("#quantity").val(settingData?.quantity);
+                        $("#trade_per_day").val(settingData?.trade_per_day);
+                        $("#risk_per_day").val(settingData?.risk_per_day);
+                        $("#risk_per_trade").val(settingData?.risk_per_trade);
+                        $("#target1").val(settingData?.target_1);
+                        $("#target2").val(settingData?.target_2);
+                        $("#target3").val(settingData?.target_3);
+                    }
+                },
+                error: function () {
+                    console.error("Failed to fetch data");
+                }
+            });
+        }
+
+        $(document).ready(function () {
             handleMode(); //handle dark mode and light mode
             handleNavbar(); //handle navbar actions
             handleLogs(); //handle and fetch trade logs 
+            handleTrades(); //handle and fetch trades 
             handleConfigLogs(); //handle and fetch config logs 
             handleTradeSettingsform(); //handle config form 
+            handleDeleteData(); //handle delete data 
+            handleTradeSettingsData(); //handle trade settings form data for update
         });
     </script>
 </body>

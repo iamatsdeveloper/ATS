@@ -22,6 +22,14 @@ const TradeSettingsSechma = new mongoose.Schema(
             type: Number,
             default: null
         },
+        risk_per_trade: {
+            type: String,
+            default: null
+        },
+        risk_per_day: {
+            type: String,
+            default: null
+        },
     },
     { timestamps: true }
 );
