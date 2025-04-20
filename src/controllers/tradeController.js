@@ -47,6 +47,14 @@ export const handleTrade = async (req, res) => {
                         message: "Unable to process trade without entry."
                     });
                 }
+                if (records) {
+                    if (records.total_trades >= records.trade_per_day) {
+                        return res.status(200).json({
+                            success: false,
+                            message: "Daily Trade Limit Reached."
+                        });
+                    }
+                }
 
                 if (exit || exit == "true") {
 
