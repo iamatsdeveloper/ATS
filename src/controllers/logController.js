@@ -28,7 +28,7 @@ export const fetchLogs = async (req, res) => {
 export const fetchConfigLogs = async (req, res) => {
     try {
         const data = await TradeConfig.find()
-        .select('-_id unique_id total_trades quantity trade_per_day createdAt updatedAt')
+        .select('-_id unique_id total_trades quantity trade_per_day created_date updatedAt')
         .sort({ createdAt: -1 });
 
         return res.status(200).json({

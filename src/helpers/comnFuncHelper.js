@@ -23,3 +23,8 @@ export const getFormattedDate = (date = null) => {
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+
+export const getISTISOString = () => {
+    const ist = new Date(Date.now() + 330 * 60000);
+    return ist.toISOString();
+};

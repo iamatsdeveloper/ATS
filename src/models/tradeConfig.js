@@ -19,6 +19,10 @@ const TradeConfigSechma = new mongoose.Schema(
             type: Number,
             default: null
         },
+        created_date: {
+            type: Date,
+            default: null
+        },
     },
     { timestamps: true }
 );

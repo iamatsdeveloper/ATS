@@ -27,3 +27,12 @@ mongoose.connect(process.env.MONGO_URL, {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
 }).catch((error) => console.log(`${error} did not connect`));
 //#endregion
+
+const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0); // Set to midnight
+
+const endOfToday = new Date();
+endOfToday.setHours(23, 59, 59, 999); // Set to the end of the day
+
+console.log(startOfToday);
+console.log(endOfToday);

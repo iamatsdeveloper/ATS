@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import TradeLogs from "../models/tradeLogs.js";
 import TradeConfig from "../models/tradeConfig.js";
 import TradeSettings from "../models/tradeSettings.js";
-import { countDecimalPlaces, getFormattedDate } from "../helpers/comnFuncHelper.js";
+import { countDecimalPlaces, getFormattedDate, getISTISOString } from "../helpers/comnFuncHelper.js";
 import Trades from "../models/trades.js";
 
 //load environment variables
@@ -182,7 +182,7 @@ const getAdjustedRiskQantity = async (jsondata, quantity, risk_per_trade, risk_p
     let qTraded = jsondata.EPRICE * quantity;
 
     let action = jsondata.TT;
-    const total_risk = Number(action == 'BUY' ? (qTraded - (jsondata.SL * quantity)) : ((jsondata.SL * quantity) - qTraded)).toFixed(2);
+    const total_risk = Math.abs(Number(action == 'BUY' ? (qTraded - (jsondata.SL * quantity)) : ((jsondata.SL * quantity) - qTraded))).toFixed(2);
 
     if(total_risk <= risk_per_trade) {
         return adjustedQuantity;
@@ -190,7 +190,7 @@ const getAdjustedRiskQantity = async (jsondata, quantity, risk_per_trade, risk_p
 
     for (adjustedQuantity; adjustedQuantity >= 0; adjustedQuantity--) {
         qTraded = Number(jsondata.EPRICE * adjustedQuantity).toFixed(2);
-        const risk = Number(action == 'BUY' ? (qTraded - (jsondata.SL * adjustedQuantity)) : ((jsondata.SL * adjustedQuantity) - qTraded)).toFixed(2);
+        const risk = Math.abs(Number(action == 'BUY' ? (qTraded - (jsondata.SL * adjustedQuantity)) : ((jsondata.SL * adjustedQuantity) - qTraded))).toFixed(2);
 
         if(risk <= risk_per_trade) {
             return adjustedQuantity;
@@ -291,7 +291,8 @@ const updateDailyTradeConfig = async (quantity = null, trade_per_day = 3) => {
             const newconfig = new TradeConfig({
                 unique_id: UniqueId,
                 quantity: quantity,
-                trade_per_day: trade_per_day
+                trade_per_day: trade_per_day,
+                created_date: getISTISOString()
             });
             await newconfig.save();
         }
@@ -338,7 +339,7 @@ const getTodaysRecord = async (flag = false) => {
         }
         else {
             records = await TradeConfig.findOne({
-                createdAt: {
+                created_date: {
                     $gte: startOfToday,
                     $lte: endOfToday,
                 },
